@@ -1,0 +1,9 @@
+Anna’s HCDE 439 Physical Computing Page!
+ 
+My name is Anna! I'm an HCDE major and excited to learn the following things in this class: how to work with the Arduino, and how to make programs that make things change in the physical world. 
+Assignment 1: Blink!
+
+Assignment 1 was a panda! 
+Assignment 2: Fade!
+
+Assignment 2 was a panda! 

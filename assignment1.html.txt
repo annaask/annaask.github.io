@@ -14,7 +14,7 @@
         <div class="header">
             <h1>Anna's Assignment 1, Blink!</h1>
             <p>
-            <img src="Sharffyclose.JPG" width=400></a>
+            <img src="red-panda.jpg" width=400></a>
             </p>
             <p>
             For this assignment, I had to make 3 LED's blink using our Arduino. Below is the documentation!

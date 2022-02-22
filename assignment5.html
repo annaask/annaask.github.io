@@ -29,7 +29,11 @@
                 Shown on the schematic are 11 pins on the arduino. These pins are 5V, 2,3,4,5,6,7 8, 9,10 and ground. The arduino is connected to external power. Also showin is the Keypad. Pin 5V is an outputing pin and is connected to the motor and flyback diode in parallel, then a transistor that is connected to pin 10 and ground. Pins 2-9 are connected to the keypad.
                 </p>
                 <p>
-                
+                AnalogWrite(pin, 0) is about equivalent to 0V in the gate.
+                AnalogWrite(pin, 63) is about equivalent to 1.25V in the gate.
+                AnalogWrite(pin, 127) is about equivalent to 2.5V in the gate.
+                AnalogWrite(pin, 191) is about equivalent to 3.75V in the gate.
+                AnalogWrite(pin, 255) is about equivalent to 5V in the gate.
                 </p>
                 
                 <h2>Code Snippet</h2>

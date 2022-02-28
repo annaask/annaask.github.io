@@ -1,0 +1,325 @@
+<!DOCTYPE html> 
+<html> 
+    <head> 
+        <meta charset="utf-8"> 
+        <meta name="viewport" content="width=device-width, maximum-scale=1.0" />
+
+        <title>Anna's HCDE 439 Physical Computing Page!</title>
+
+        <link href="style.css" media="screen" rel="stylesheet" type="text/css" />
+
+    </head> 
+    <body> 
+
+        <div class="header">
+            <h1>Anna's Assignment 6, : Talking to the Web!</h1>
+            <p>
+            <img src="Sharffyclose.JPG" width=200></a>
+            </p>
+            <p>
+            For this assignment, I had to use 2 inputs to control something on the web using P5.js. The page had to be interactive and send signals back to the arduino for some type of output. I used a joystick to move something on the screen around, and when the user presses keys the object changes colors and changes the colors of the RGB LED.
+
+            </p>
+        <h2>Schematic </h2>
+            <p>
+            <img src="FadeSchematic.png" width=400></a>
+            <img src="A6JoySchematic.png" width=400></a>
+            
+                </p>
+                <p>
+                Shown on the schematic are 3 pins on the Arduino with an LED and resistor attached to each of them, which are also connected to ground. These pins are outputs and are 11, 10, and 9. The three LEDs are a representation of the RGB LED. The red, blue, and green portions of the RGB LED are connected to pin 11, 10, and 9, respectively. This RGB LED portion of the schematic functions the same as the one in the Fade Project from earlier in the quarter.
+                </p>
+                <p>
+                Also shown on the schematic is a joystick connected to 5 pins, including pins A0, A1, 2, 5V, and GND. Pin GND is connected to the GND line on the joystick. Pin 5V (power) is connected to the 5V line on the joystick. Pin A0 is connected to the VRx line of the joystick, which returns information about the x coordinate of the joystick input.. Pin A1 is connected to the VRy line of the joystick, which returns information about the y coordinate of the joystick input. Pin 2 is connected to the SW line of the joystick, which sends signals regarding the button aspect of the joystick
+                </p>
+                <p>
+                The schematic also shows the values of the resistors, which I determined by using V=IR and using the resistors I had that matched closest. For the red portion of the RGB LED, as their voltage drop is 1.8V, the voltage that is being supplied is 5V, and the target current for LEDs is 20 mA, the resistor needed to reach that target current have to have a resistance of 160 ohms. As I only had 100 and 220 ohm resistors, I opted for 220 ohms as 100ohms would exceed the recommended current maximum of 30mA. Using V=IR, the current is then 14.5 mA. For the blue and green portions of the RGB LED, as their voltage drop is 3.2V, the resistance needed for 20 mA is 90 ohms. I opted to use an 100 ohm resistor for this one as I wanted the brightness of the LEDs to all be close to the same, and 220 ohms would have made the blue significantly dimmer. The calculated current in this case is 17mA.
+                </p>
+                
+                
+                <h2>Code Snippets</h2>
+                <h3>Arduino
+                </h3>
+                <!-- HTML generated using hilite.me --><div style="background: #ffffff; overflow:auto;width:auto;border:solid gray;border-width:.1em .1em .1em .8em;padding:.2em .6em;"><pre style="margin: 0; line-height: 125%"><span style="color: #333399; font-weight: bold">int</span> VRx <span style="color: #333333">=</span> A0<span style="color: #333333">;</span>     <span style="color: #888888">// initializes the variable &quot;VRx&quot; to represent the A0 pin.</span>
+                    <span style="color: #333399; font-weight: bold">int</span> VRy <span style="color: #333333">=</span> A1<span style="color: #333333">;</span>     <span style="color: #888888">// initializes the variable &quot;VRy&quot; to represent the A1 pin</span>
+                    <span style="color: #333399; font-weight: bold">int</span> red <span style="color: #333333">=</span> <span style="color: #0000DD; font-weight: bold">11</span><span style="color: #333333">;</span>     <span style="color: #888888">// initializes the variable &quot;red&quot; to represent the 11 pin</span>
+                    <span style="color: #333399; font-weight: bold">int</span> green <span style="color: #333333">=</span> <span style="color: #0000DD; font-weight: bold">10</span><span style="color: #333333">;</span>   <span style="color: #888888">// initializes the variable &quot;green&quot; to represent the 10 pin</span>
+                    <span style="color: #333399; font-weight: bold">int</span> blue <span style="color: #333333">=</span> <span style="color: #0000DD; font-weight: bold">9</span><span style="color: #333333">;</span>     <span style="color: #888888">// initializes the variable &quot;blue&quot; to represent the 9 pin</span>
+                    
+                    <span style="color: #333399; font-weight: bold">int</span> redVal <span style="color: #333333">=</span> <span style="color: #0000DD; font-weight: bold">255</span><span style="color: #333333">;</span>       <span style="color: #888888">//initializes the variable &quot;redVal&quot; to be the value of the R in RGB, and starts at 255</span>
+                    <span style="color: #333399; font-weight: bold">int</span> greenVal <span style="color: #333333">=</span> <span style="color: #0000DD; font-weight: bold">255</span><span style="color: #333333">;</span>     <span style="color: #888888">//initializes the variable &quot;greenVal&quot; to be the value of the G in RGB, and starts at 255</span>
+                    <span style="color: #333399; font-weight: bold">int</span> blueVal <span style="color: #333333">=</span> <span style="color: #0000DD; font-weight: bold">255</span><span style="color: #333333">;</span>      <span style="color: #888888">//initializes the variable &quot;blueVal&quot; to be the value of the B in RGB, and starts at 255</span>
+                    
+                    
+                    <span style="color: #333399; font-weight: bold">void</span> <span style="color: #0066BB; font-weight: bold">setup</span><span style="color: #333333">()</span> <span style="color: #333333">{</span>
+                    <span style="color: #888888">// method that sets up the arduino, ran once.</span>
+                    Serial<span style="color: #333333">.</span><span style="color: #0000CC">begin</span><span style="color: #333333">(</span><span style="color: #0000DD; font-weight: bold">9600</span><span style="color: #333333">);</span>     <span style="color: #888888">// sets up the serial to running at 9600</span>
+                    Serial<span style="color: #333333">.</span><span style="color: #0000CC">setTimeout</span><span style="color: #333333">(</span><span style="color: #0000DD; font-weight: bold">10</span><span style="color: #333333">);</span>      <span style="color: #888888">// sets the serial to have a timeout so that it does not run indefinitely</span>
+                    
+                    pinMode<span style="color: #333333">(</span>red<span style="color: #333333">,</span> OUTPUT<span style="color: #333333">);</span>      <span style="color: #888888">//sets pin red to be an outputting pin</span>
+                    pinMode<span style="color: #333333">(</span>green<span style="color: #333333">,</span> OUTPUT<span style="color: #333333">);</span>    <span style="color: #888888">//sets pin green to be an outputting pin</span>
+                    pinMode<span style="color: #333333">(</span>blue<span style="color: #333333">,</span> OUTPUT<span style="color: #333333">);</span>     <span style="color: #888888">//sets pin blue to be an outputting pin</span>
+                    pinMode<span style="color: #333333">(</span>VRx<span style="color: #333333">,</span> INPUT<span style="color: #333333">);</span>       <span style="color: #888888">//sets pin VRx to be an inputting pin</span>
+                    pinMode<span style="color: #333333">(</span>VRy<span style="color: #333333">,</span> INPUT<span style="color: #333333">);</span>       <span style="color: #888888">//sets pin VRy to be an inputting pin</span>
+                    
+                    <span style="color: #333333">}</span>
+                    
+                    <span style="color: #333399; font-weight: bold">void</span> <span style="color: #0066BB; font-weight: bold">loop</span><span style="color: #333333">()</span> <span style="color: #333333">{</span>
+                    <span style="color: #888888">// method that runs main code continously repeating.</span>
+                    
+                    <span style="color: #888888">// this part of the code, that sets up the values of the joystick to be in a format readable by JSON parsing, </span>
+                    <span style="color: #888888">// was borrowed and altered from class lecture content. </span>
+                    <span style="color: #333399; font-weight: bold">int</span> s1 <span style="color: #333333">=</span> analogRead<span style="color: #333333">(</span>VRx<span style="color: #333333">);</span>   <span style="color: #888888">// assigns the value of what is read on the VRx pin to variable &quot;s1&quot;</span>
+                    <span style="color: #333399; font-weight: bold">int</span> s2 <span style="color: #333333">=</span> analogRead<span style="color: #333333">(</span>VRy<span style="color: #333333">);</span>   <span style="color: #888888">// assigns the value of what is read on the VRy pin to variable &quot;s1&quot;</span>
+                    Serial<span style="color: #333333">.</span><span style="color: #0000CC">print</span><span style="color: #333333">(</span><span style="background-color: #fff0f0">&quot;[&quot;</span><span style="color: #333333">);</span>          <span style="color: #888888">// prints &quot;[&quot; to serial</span>
+                    Serial<span style="color: #333333">.</span><span style="color: #0000CC">print</span><span style="color: #333333">(</span>s1<span style="color: #333333">);</span>           <span style="color: #888888">// prints s1 to serial</span>
+                    Serial<span style="color: #333333">.</span><span style="color: #0000CC">print</span><span style="color: #333333">(</span><span style="background-color: #fff0f0">&quot;,&quot;</span><span style="color: #333333">);</span>          <span style="color: #888888">// prints &quot;,&quot; to serial</span>
+                    Serial<span style="color: #333333">.</span><span style="color: #0000CC">print</span><span style="color: #333333">(</span>s2<span style="color: #333333">);</span>           <span style="color: #888888">// prints s2 to serial</span>
+                    Serial<span style="color: #333333">.</span><span style="color: #0000CC">println</span><span style="color: #333333">(</span><span style="background-color: #fff0f0">&quot;]&quot;</span><span style="color: #333333">);</span>        <span style="color: #888888">// prints &quot;]&quot; to serial and makes a new line</span>
+                    
+                    
+                    analogWrite<span style="color: #333333">(</span>red<span style="color: #333333">,</span> redVal<span style="color: #333333">);</span>            <span style="color: #888888">// sets the value of R in the RGB LED to redVal</span>
+                    analogWrite<span style="color: #333333">(</span>green<span style="color: #333333">,</span> greenVal<span style="color: #333333">);</span>        <span style="color: #888888">// sets the value of G in the RGB LED to redVal</span>
+                    analogWrite<span style="color: #333333">(</span>blue<span style="color: #333333">,</span> blueVal<span style="color: #333333">);</span>          <span style="color: #888888">// sets the value of B in the RGB LED to redVal</span>
+                    
+                    <span style="color: #008800; font-weight: bold">if</span> <span style="color: #333333">(</span>Serial<span style="color: #333333">.</span><span style="color: #0000CC">available</span><span style="color: #333333">()</span> <span style="color: #333333">&gt;</span> <span style="color: #0000DD; font-weight: bold">0</span><span style="color: #333333">)</span> <span style="color: #333333">{</span>        <span style="color: #888888">// if there&#39;s serial data available to read</span>
+                    <span style="color: #333399; font-weight: bold">char</span> inByte <span style="color: #333333">=</span> Serial<span style="color: #333333">.</span><span style="color: #0000CC">read</span><span style="color: #333333">();</span>       <span style="color: #888888">// read serial data and assign it to inByte char</span>
+                    
+                    <span style="color: #008800; font-weight: bold">if</span> <span style="color: #333333">(</span>inByte <span style="color: #333333">==</span> <span style="color: #0044DD">&#39;r&#39;</span><span style="color: #333333">){</span>               <span style="color: #888888">// if inByte is &#39;r&#39;</span>
+                    <span style="color: #888888">// set color of RGB to red</span>
+                    redVal <span style="color: #333333">=</span> <span style="color: #0000DD; font-weight: bold">255</span><span style="color: #333333">;</span>                 <span style="color: #888888">// set redVal to 255</span>
+                    greenVal <span style="color: #333333">=</span> <span style="color: #0000DD; font-weight: bold">0</span><span style="color: #333333">;</span>                 <span style="color: #888888">// set greenVal to 0</span>
+                    blueVal <span style="color: #333333">=</span> <span style="color: #0000DD; font-weight: bold">0</span><span style="color: #333333">;</span>                  <span style="color: #888888">// set blueVal to 0</span>
+                    
+                    <span style="color: #333333">}</span> <span style="color: #008800; font-weight: bold">else</span> <span style="color: #008800; font-weight: bold">if</span> <span style="color: #333333">(</span>inByte <span style="color: #333333">==</span> <span style="color: #0044DD">&#39;o&#39;</span><span style="color: #333333">){</span>        <span style="color: #888888">// if inByte is &#39;o&#39;</span>
+                    <span style="color: #888888">// set color of RGB to orange</span>
+                    
+                    redVal <span style="color: #333333">=</span> <span style="color: #0000DD; font-weight: bold">255</span><span style="color: #333333">;</span>                 <span style="color: #888888">// set redVal to 255</span>
+                    greenVal <span style="color: #333333">=</span> <span style="color: #0000DD; font-weight: bold">64</span><span style="color: #333333">;</span>                <span style="color: #888888">// set greenVal to 64</span>
+                    blueVal <span style="color: #333333">=</span> <span style="color: #0000DD; font-weight: bold">0</span><span style="color: #333333">;</span>                  <span style="color: #888888">// set blueVal to 0</span>
+                    
+                    <span style="color: #333333">}</span> <span style="color: #008800; font-weight: bold">else</span> <span style="color: #008800; font-weight: bold">if</span> <span style="color: #333333">(</span>inByte <span style="color: #333333">==</span> <span style="color: #0044DD">&#39;y&#39;</span><span style="color: #333333">){</span>        <span style="color: #888888">// if inByte is &#39;y&#39;</span>
+                    <span style="color: #888888">// set color of RGB to yellow</span>
+                    
+                    redVal <span style="color: #333333">=</span> <span style="color: #0000DD; font-weight: bold">255</span><span style="color: #333333">;</span>                 <span style="color: #888888">// set redVal to 255</span>
+                    greenVal <span style="color: #333333">=</span> <span style="color: #0000DD; font-weight: bold">255</span><span style="color: #333333">;</span>               <span style="color: #888888">// set greenVal to 255</span>
+                    blueVal <span style="color: #333333">=</span> <span style="color: #0000DD; font-weight: bold">0</span><span style="color: #333333">;</span>                  <span style="color: #888888">// set blueVal to 0</span>
+                    
+                    <span style="color: #333333">}</span> <span style="color: #008800; font-weight: bold">else</span> <span style="color: #008800; font-weight: bold">if</span> <span style="color: #333333">(</span>inByte <span style="color: #333333">==</span> <span style="color: #0044DD">&#39;g&#39;</span><span style="color: #333333">){</span>        <span style="color: #888888">// if inByte is &#39;g&#39;</span>
+                    <span style="color: #888888">// set color of RGB to green</span>
+                    redVal <span style="color: #333333">=</span> <span style="color: #0000DD; font-weight: bold">0</span><span style="color: #333333">;</span>                   <span style="color: #888888">// set redVal to 0</span>
+                    greenVal <span style="color: #333333">=</span> <span style="color: #0000DD; font-weight: bold">255</span><span style="color: #333333">;</span>               <span style="color: #888888">// set greenVal to 255</span>
+                    blueVal <span style="color: #333333">=</span> <span style="color: #0000DD; font-weight: bold">0</span><span style="color: #333333">;</span>                  <span style="color: #888888">// set blueVal to 0</span>
+                    
+                    <span style="color: #333333">}</span> <span style="color: #008800; font-weight: bold">else</span> <span style="color: #008800; font-weight: bold">if</span> <span style="color: #333333">(</span>inByte <span style="color: #333333">==</span> <span style="color: #0044DD">&#39;b&#39;</span><span style="color: #333333">){</span>        <span style="color: #888888">// if inByte is &#39;b&#39;</span>
+                    <span style="color: #888888">// set color of RGB to blue</span>
+                    
+                    redVal <span style="color: #333333">=</span> <span style="color: #0000DD; font-weight: bold">0</span><span style="color: #333333">;</span>                   <span style="color: #888888">// set redVal to 0</span>
+                    greenVal <span style="color: #333333">=</span> <span style="color: #0000DD; font-weight: bold">0</span><span style="color: #333333">;</span>                 <span style="color: #888888">// set greenVal to 0</span>
+                    blueVal <span style="color: #333333">=</span> <span style="color: #0000DD; font-weight: bold">255</span><span style="color: #333333">;</span>                <span style="color: #888888">// set blueVal to 255</span>
+                    
+                    <span style="color: #333333">}</span> <span style="color: #008800; font-weight: bold">else</span> <span style="color: #008800; font-weight: bold">if</span> <span style="color: #333333">(</span>inByte <span style="color: #333333">==</span> <span style="color: #0044DD">&#39;p&#39;</span><span style="color: #333333">){</span>        <span style="color: #888888">// if inByte is &#39;p&#39;</span>
+                    <span style="color: #888888">// set color of RGB to purple</span>
+                    
+                    redVal <span style="color: #333333">=</span> <span style="color: #0000DD; font-weight: bold">255</span><span style="color: #333333">;</span>                 <span style="color: #888888">// set redVal to 255</span>
+                    greenVal <span style="color: #333333">=</span> <span style="color: #0000DD; font-weight: bold">0</span><span style="color: #333333">;</span>                 <span style="color: #888888">// set greenVal to 0</span>
+                    blueVal <span style="color: #333333">=</span> <span style="color: #0000DD; font-weight: bold">255</span><span style="color: #333333">;</span>                <span style="color: #888888">// set blueVal to 255</span>
+                    
+                    <span style="color: #333333">}</span>
+                    
+                    <span style="color: #333333">}</span>
+                    
+                    delay<span style="color: #333333">(</span><span style="color: #0000DD; font-weight: bold">10</span><span style="color: #333333">);</span>           <span style="color: #888888">// wait 10 ms</span>
+                    
+                    
+                    
+                    <span style="color: #333333">}</span>
+                </pre></div>
+
+                    
+                    </p>
+                    <p>
+                    Prior to the set up method 8 variables are initialized. This includes the VRx, VRy, red, green, and blue variables, representing their respective pins attached to them. There are also the redVal, greenVal, and blueVal variables that keep track of the RGB color codes.
+                    </p>
+                    <p>
+                    My code includes a setup method which runs once and prepares the pins on the Arduino for use by designating them as outputs/inputs, and begins the serial monitor.
+                    </p>
+                   <p>
+                   The loop method begings by assigning the values of analogRead(VRx) and analogRead(VRy) to the variables s1 and s2 respectively. This represents the x and y position of the joystick. Then these values are formatted for serial to be sent over to P5. Then the analogWrite method writes the red, green, and blue pins to redVal, greenVal, and blueVal respectively. Following this, the code checks if serial is available to read, and if it is, it will check what the char it picks up from serial is. Depending on the char, it will reassign the redVal, greenVal, and BlueVal to different color codes. It will then delay for 10 ms.
+                   </p>
+                   <p>
+                   AnalogRead(VRx) and AnalogRead(VRy) will be getting values between 0 and 1023 depending on the position of the joystick.
+                   </p>
+                    
+                    <h3> p5.js
+                        </h3>
+                    <!-- HTML generated using hilite.me --><div style="background: #f8f8f8; overflow:auto;width:auto;border:solid gray;border-width:.1em .1em .1em .8em;padding:.2em .6em;"><pre style="margin: 0; line-height: 125%"><span style="color: #8f5902; font-style: italic">//Assignment 6 p5</span>
+                        
+                        <span style="color: #204a87; font-weight: bold">var</span> <span style="color: #000000">serial</span><span style="color: #000000; font-weight: bold">;</span> <span style="color: #8f5902; font-style: italic">// initializes the serialport object instance</span>
+                        <span style="color: #204a87; font-weight: bold">var</span> <span style="color: #000000">portName</span> <span style="color: #ce5c00; font-weight: bold">=</span> <span style="color: #4e9a06">&#39;/dev/tty.usbmodem14301&#39;</span> <span style="color: #8f5902; font-style: italic">//initializes variable &quot;portName&quot; to be the name of the port connected to my arduino</span>
+                        <span style="color: #204a87; font-weight: bold">var</span> <span style="color: #000000">xPos</span><span style="color: #000000; font-weight: bold">;</span>               <span style="color: #8f5902; font-style: italic">//initializes variable &quot;xPos&quot; to record the xpos of the joystick</span>
+                        <span style="color: #204a87; font-weight: bold">var</span> <span style="color: #000000">yPos</span><span style="color: #000000; font-weight: bold">;</span>               <span style="color: #8f5902; font-style: italic">//initializes variable &quot;yPos&quot; to record the xpos of the joystick</span>
+                        <span style="color: #204a87; font-weight: bold">var</span> <span style="color: #000000">dataarray</span> <span style="color: #ce5c00; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">[];</span>         <span style="color: #8f5902; font-style: italic">//initializes the array &quot;dataarray&quot; that will keep track of data coming over from serial.</span>
+                        <span style="color: #204a87; font-weight: bold">var</span> <span style="color: #000000">green</span> <span style="color: #ce5c00; font-weight: bold">=</span> <span style="color: #0000cf; font-weight: bold">255</span><span style="color: #000000; font-weight: bold">;</span>          <span style="color: #8f5902; font-style: italic">//initializes variable &quot;green&quot; to start at 255</span>
+                        <span style="color: #204a87; font-weight: bold">var</span> <span style="color: #000000">red</span> <span style="color: #ce5c00; font-weight: bold">=</span> <span style="color: #0000cf; font-weight: bold">255</span><span style="color: #000000; font-weight: bold">;</span>          <span style="color: #8f5902; font-style: italic">//initializes variable &quot;red&quot; to start at  255</span>
+                        <span style="color: #204a87; font-weight: bold">var</span> <span style="color: #000000">blue</span> <span style="color: #ce5c00; font-weight: bold">=</span> <span style="color: #0000cf; font-weight: bold">255</span><span style="color: #000000; font-weight: bold">;</span>          <span style="color: #8f5902; font-style: italic">//initializes variable &quot;blue&quot; to start at 255</span>
+                        
+                        
+                        <span style="color: #8f5902; font-style: italic">//** below code is borrowed and altered from class lecture.</span>
+                        <span style="color: #204a87; font-weight: bold">function</span> <span style="color: #000000">setup</span><span style="color: #000000; font-weight: bold">()</span> <span style="color: #000000; font-weight: bold">{</span>
+                        <span style="color: #000000">serial</span> <span style="color: #ce5c00; font-weight: bold">=</span> <span style="color: #204a87; font-weight: bold">new</span> <span style="color: #000000">p5</span><span style="color: #000000; font-weight: bold">.</span><span style="color: #000000">SerialPort</span><span style="color: #000000; font-weight: bold">();</span>       <span style="color: #8f5902; font-style: italic">// creates a new instance of the serialport</span>
+                        <span style="color: #000000">serial</span><span style="color: #000000; font-weight: bold">.</span><span style="color: #000000">on</span><span style="color: #000000; font-weight: bold">(</span><span style="color: #4e9a06">&#39;list&#39;</span><span style="color: #000000; font-weight: bold">,</span> <span style="color: #000000">printList</span><span style="color: #000000; font-weight: bold">);</span>       <span style="color: #8f5902; font-style: italic">// set a callback function for the serialport list event</span>
+                        <span style="color: #000000">serial</span><span style="color: #000000; font-weight: bold">.</span><span style="color: #000000">on</span><span style="color: #000000; font-weight: bold">(</span><span style="color: #4e9a06">&#39;connected&#39;</span><span style="color: #000000; font-weight: bold">,</span> <span style="color: #000000">serverConnected</span><span style="color: #000000; font-weight: bold">);</span> <span style="color: #8f5902; font-style: italic">// callback for connecting to the server</span>
+                        <span style="color: #000000">serial</span><span style="color: #000000; font-weight: bold">.</span><span style="color: #000000">on</span><span style="color: #000000; font-weight: bold">(</span><span style="color: #4e9a06">&#39;open&#39;</span><span style="color: #000000; font-weight: bold">,</span> <span style="color: #000000">portOpen</span><span style="color: #000000; font-weight: bold">);</span>        <span style="color: #8f5902; font-style: italic">// callback for the port opening</span>
+                        <span style="color: #000000">serial</span><span style="color: #000000; font-weight: bold">.</span><span style="color: #000000">on</span><span style="color: #000000; font-weight: bold">(</span><span style="color: #4e9a06">&#39;data&#39;</span><span style="color: #000000; font-weight: bold">,</span> <span style="color: #000000">serialEvent</span><span style="color: #000000; font-weight: bold">);</span>     <span style="color: #8f5902; font-style: italic">// callback for when new data arrives</span>
+                        <span style="color: #000000">serial</span><span style="color: #000000; font-weight: bold">.</span><span style="color: #000000">on</span><span style="color: #000000; font-weight: bold">(</span><span style="color: #4e9a06">&#39;error&#39;</span><span style="color: #000000; font-weight: bold">,</span> <span style="color: #000000">serialError</span><span style="color: #000000; font-weight: bold">);</span>    <span style="color: #8f5902; font-style: italic">// callback for errors</span>
+                        <span style="color: #000000">serial</span><span style="color: #000000; font-weight: bold">.</span><span style="color: #000000">on</span><span style="color: #000000; font-weight: bold">(</span><span style="color: #4e9a06">&#39;close&#39;</span><span style="color: #000000; font-weight: bold">,</span> <span style="color: #000000">portClose</span><span style="color: #000000; font-weight: bold">);</span>      <span style="color: #8f5902; font-style: italic">// callback for the port closing</span>
+                        
+                        <span style="color: #000000">serial</span><span style="color: #000000; font-weight: bold">.</span><span style="color: #000000">list</span><span style="color: #000000; font-weight: bold">();</span>                      <span style="color: #8f5902; font-style: italic">// list the serial ports</span>
+                        <span style="color: #000000">serial</span><span style="color: #000000; font-weight: bold">.</span><span style="color: #000000">open</span><span style="color: #000000; font-weight: bold">(</span><span style="color: #000000">portName</span><span style="color: #000000; font-weight: bold">);</span>              <span style="color: #8f5902; font-style: italic">// open a serial port</span>
+                        <span style="color: #000000">createCanvas</span><span style="color: #000000; font-weight: bold">(</span><span style="color: #0000cf; font-weight: bold">1200</span><span style="color: #000000; font-weight: bold">,</span> <span style="color: #0000cf; font-weight: bold">800</span><span style="color: #000000; font-weight: bold">);</span>            <span style="color: #8f5902; font-style: italic">// creates a canvas element with dimensions 1200 x 800</span>
+                        <span style="color: #000000">background</span><span style="color: #000000; font-weight: bold">(</span><span style="color: #0000cf; font-weight: bold">0x08</span><span style="color: #000000; font-weight: bold">,</span> <span style="color: #0000cf; font-weight: bold">0x16</span><span style="color: #000000; font-weight: bold">,</span> <span style="color: #0000cf; font-weight: bold">0x40</span><span style="color: #000000; font-weight: bold">);</span>       <span style="color: #8f5902; font-style: italic">// sets background color to the color associated with 0x08, 0x16, 0x40.</span>
+                        <span style="color: #000000; font-weight: bold">}</span>
+                        
+                        
+                        <span style="color: #204a87; font-weight: bold">function</span> <span style="color: #000000">printList</span><span style="color: #000000; font-weight: bold">(</span><span style="color: #000000">portList</span><span style="color: #000000; font-weight: bold">)</span> <span style="color: #000000; font-weight: bold">{</span>      <span style="color: #8f5902; font-style: italic">//printst the list of serial ports</span>
+                        <span style="color: #8f5902; font-style: italic">// portList is an array of serial port names</span>
+                        <span style="color: #204a87; font-weight: bold">for</span> <span style="color: #000000; font-weight: bold">(</span><span style="color: #204a87; font-weight: bold">var</span> <span style="color: #000000">i</span> <span style="color: #ce5c00; font-weight: bold">=</span> <span style="color: #0000cf; font-weight: bold">0</span><span style="color: #000000; font-weight: bold">;</span> <span style="color: #000000">i</span> <span style="color: #ce5c00; font-weight: bold">&lt;</span> <span style="color: #000000">portList</span><span style="color: #000000; font-weight: bold">.</span><span style="color: #000000">length</span><span style="color: #000000; font-weight: bold">;</span> <span style="color: #000000">i</span><span style="color: #ce5c00; font-weight: bold">++</span><span style="color: #000000; font-weight: bold">)</span> <span style="color: #000000; font-weight: bold">{</span>     <span style="color: #8f5902; font-style: italic">//for the number of ports available</span>
+                        <span style="color: #8f5902; font-style: italic">// Display the list the console:</span>
+                        <span style="color: #000000">print</span><span style="color: #000000; font-weight: bold">(</span><span style="color: #000000">i</span> <span style="color: #ce5c00; font-weight: bold">+</span> <span style="color: #4e9a06">&quot; &quot;</span> <span style="color: #ce5c00; font-weight: bold">+</span> <span style="color: #000000">portList</span><span style="color: #000000; font-weight: bold">[</span><span style="color: #000000">i</span><span style="color: #000000; font-weight: bold">]);</span>               <span style="color: #8f5902; font-style: italic">// print the index of the port and the name of the port.</span>
+                        <span style="color: #000000; font-weight: bold">}</span>
+                        <span style="color: #000000; font-weight: bold">}</span>
+                        
+                        <span style="color: #204a87; font-weight: bold">function</span> <span style="color: #000000">serverConnected</span><span style="color: #000000; font-weight: bold">()</span> <span style="color: #000000; font-weight: bold">{</span>            <span style="color: #8f5902; font-style: italic">// connects to server</span>
+                        <span style="color: #000000">print</span><span style="color: #000000; font-weight: bold">(</span><span style="color: #4e9a06">&#39;connected to server.&#39;</span><span style="color: #000000; font-weight: bold">);</span>      <span style="color: #8f5902; font-style: italic">// prints &quot;connected to server&quot;</span>
+                        <span style="color: #000000; font-weight: bold">}</span>
+                        
+                        <span style="color: #204a87; font-weight: bold">function</span> <span style="color: #000000">portOpen</span><span style="color: #000000; font-weight: bold">()</span> <span style="color: #000000; font-weight: bold">{</span>                   <span style="color: #8f5902; font-style: italic">//opens port</span>
+                        <span style="color: #000000">print</span><span style="color: #000000; font-weight: bold">(</span><span style="color: #4e9a06">&#39;the serial port opened.&#39;</span><span style="color: #000000; font-weight: bold">)</span>    <span style="color: #8f5902; font-style: italic">// prints &quot;the serial port opened&quot;</span>
+                        <span style="color: #000000; font-weight: bold">}</span>
+                        
+                        <span style="color: #204a87; font-weight: bold">function</span> <span style="color: #000000">serialError</span><span style="color: #000000; font-weight: bold">(</span><span style="color: #000000">err</span><span style="color: #000000; font-weight: bold">)</span> <span style="color: #000000; font-weight: bold">{</span>             <span style="color: #8f5902; font-style: italic">// checks for errors</span>
+                        <span style="color: #000000">print</span><span style="color: #000000; font-weight: bold">(</span><span style="color: #4e9a06">&#39;Something went wrong with the serial port. &#39;</span> <span style="color: #ce5c00; font-weight: bold">+</span> <span style="color: #000000">err</span><span style="color: #000000; font-weight: bold">);</span> <span style="color: #8f5902; font-style: italic">// prints &quot;something went wrong with the serial port&quot; and the error code</span>
+                        <span style="color: #000000; font-weight: bold">}</span>
+                        
+                        <span style="color: #204a87; font-weight: bold">function</span> <span style="color: #000000">portClose</span><span style="color: #000000; font-weight: bold">()</span> <span style="color: #000000; font-weight: bold">{</span>                  <span style="color: #8f5902; font-style: italic">// closes port</span>
+                        <span style="color: #000000">print</span><span style="color: #000000; font-weight: bold">(</span><span style="color: #4e9a06">&#39;The serial port closed.&#39;</span><span style="color: #000000; font-weight: bold">);</span>   <span style="color: #8f5902; font-style: italic">// prints &quot;the serial port closed&quot;</span>
+                        <span style="color: #000000; font-weight: bold">}</span>
+                        
+                        <span style="color: #204a87; font-weight: bold">function</span> <span style="color: #000000">serialEvent</span><span style="color: #000000; font-weight: bold">()</span> <span style="color: #000000; font-weight: bold">{</span>                <span style="color: #8f5902; font-style: italic">// checks if data is available in the serial port</span>
+                        <span style="color: #204a87; font-weight: bold">if</span> <span style="color: #000000; font-weight: bold">(</span><span style="color: #000000">serial</span><span style="color: #000000; font-weight: bold">.</span><span style="color: #000000">available</span><span style="color: #000000; font-weight: bold">())</span> <span style="color: #000000; font-weight: bold">{</span>           <span style="color: #8f5902; font-style: italic">// if there is data availale in the serial port</span>
+                        <span style="color: #204a87; font-weight: bold">var</span> <span style="color: #000000">datastring</span> <span style="color: #ce5c00; font-weight: bold">=</span> <span style="color: #000000">serial</span><span style="color: #000000; font-weight: bold">.</span><span style="color: #000000">readLine</span><span style="color: #000000; font-weight: bold">();</span> <span style="color: #8f5902; font-style: italic">// assign the serial line to the variable &quot;datastring&quot;</span>
+                        <span style="color: #204a87; font-weight: bold">var</span> <span style="color: #000000">newarray</span><span style="color: #000000; font-weight: bold">;</span>       <span style="color: #8f5902; font-style: italic">//initialize variable newarray</span>
+                        <span style="color: #204a87; font-weight: bold">try</span> <span style="color: #000000; font-weight: bold">{</span>           <span style="color: #8f5902; font-style: italic">//try to:</span>
+                        <span style="color: #000000">newarray</span> <span style="color: #ce5c00; font-weight: bold">=</span> <span style="color: #000000">JSON</span><span style="color: #000000; font-weight: bold">.</span><span style="color: #000000">parse</span><span style="color: #000000; font-weight: bold">(</span><span style="color: #000000">datastring</span><span style="color: #000000; font-weight: bold">);</span> <span style="color: #8f5902; font-style: italic">//parse datastring using JSON and put it into new array</span>
+                        <span style="color: #000000; font-weight: bold">}</span> <span style="color: #204a87; font-weight: bold">catch</span><span style="color: #000000; font-weight: bold">(</span><span style="color: #000000">err</span><span style="color: #000000; font-weight: bold">)</span> <span style="color: #000000; font-weight: bold">{</span>      <span style="color: #8f5902; font-style: italic">//catch if try fails</span>
+                        <span style="color: #000000; font-weight: bold">}</span>
+                        <span style="color: #204a87; font-weight: bold">if</span> <span style="color: #000000; font-weight: bold">(</span><span style="color: #204a87; font-weight: bold">typeof</span><span style="color: #000000; font-weight: bold">(</span><span style="color: #000000">newarray</span><span style="color: #000000; font-weight: bold">)</span> <span style="color: #ce5c00; font-weight: bold">==</span> <span style="color: #4e9a06">&#39;object&#39;</span><span style="color: #000000; font-weight: bold">)</span> <span style="color: #000000; font-weight: bold">{</span>     <span style="color: #8f5902; font-style: italic">//if newarray is an &#39;object&#39; type</span>
+                        <span style="color: #000000">dataarray</span> <span style="color: #ce5c00; font-weight: bold">=</span> <span style="color: #000000">newarray</span><span style="color: #000000; font-weight: bold">;</span>   <span style="color: #8f5902; font-style: italic">//assign dataarray to the object newarray</span>
+                        <span style="color: #000000; font-weight: bold">}</span>
+                        <span style="color: #8f5902; font-style: italic">//console.log(&quot;got back &quot; + datastring + &quot; &quot; + dataarray[0]);</span>
+                        <span style="color: #000000">xPos</span> <span style="color: #ce5c00; font-weight: bold">=</span> <span style="color: #000000">dataarray</span><span style="color: #000000; font-weight: bold">[</span><span style="color: #0000cf; font-weight: bold">0</span><span style="color: #000000; font-weight: bold">];</span>    <span style="color: #8f5902; font-style: italic">//assign xPos to the value of the first element of dataarray</span>
+                        <span style="color: #000000">yPos</span> <span style="color: #ce5c00; font-weight: bold">=</span> <span style="color: #000000">dataarray</span><span style="color: #000000; font-weight: bold">[</span><span style="color: #0000cf; font-weight: bold">1</span><span style="color: #000000; font-weight: bold">];</span>    <span style="color: #8f5902; font-style: italic">//assign yPos to the value of the first element of dataarray</span>
+                        <span style="color: #8f5902; font-style: italic">//console.log(&quot;got back &quot; + datastring + &quot; &quot; + xPos + yPos); Debugging, prints to console the value from the joystick.</span>
+                        <span style="color: #000000; font-weight: bold">}</span>
+                        <span style="color: #000000; font-weight: bold">}</span>
+                        
+                        <span style="color: #8f5902; font-style: italic">//** end borrowed from lecture code.</span>
+                        
+                        <span style="color: #8f5902; font-style: italic">//var xPos;</span>
+                        
+                        <span style="color: #8f5902; font-style: italic">//**below getRandomArbitrary function is borrowed from the MDN webdocs. https:// developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/random</span>
+                        
+                        <span style="color: #204a87; font-weight: bold">function</span> <span style="color: #000000">getRandomArbitrary</span><span style="color: #000000; font-weight: bold">(</span><span style="color: #000000">min</span><span style="color: #000000; font-weight: bold">,</span> <span style="color: #000000">max</span><span style="color: #000000; font-weight: bold">)</span> <span style="color: #000000; font-weight: bold">{</span>     <span style="color: #8f5902; font-style: italic">//getRandomArbitrary function takes in two variables, a min and max value</span>
+                        <span style="color: #204a87; font-weight: bold">return</span> <span style="color: #204a87">Math</span><span style="color: #000000; font-weight: bold">.</span><span style="color: #000000">random</span><span style="color: #000000; font-weight: bold">()</span> <span style="color: #ce5c00; font-weight: bold">*</span> <span style="color: #000000; font-weight: bold">(</span><span style="color: #000000">max</span> <span style="color: #ce5c00; font-weight: bold">-</span> <span style="color: #000000">min</span><span style="color: #000000; font-weight: bold">)</span> <span style="color: #ce5c00; font-weight: bold">+</span> <span style="color: #000000">min</span><span style="color: #000000; font-weight: bold">;</span>   <span style="color: #8f5902; font-style: italic">//returns a value between min and max</span>
+                        <span style="color: #000000; font-weight: bold">}</span>
+                        <span style="color: #8f5902; font-style: italic">//** end borrowed from mozilla.</span>
+                        
+                        
+                        <span style="color: #8f5902; font-style: italic">//function setup() {</span>
+                        <span style="color: #8f5902; font-style: italic">//    createCanvas(710, 400);</span>
+                        <span style="color: #8f5902; font-style: italic">//    strokeWeight(10);</span>
+                        <span style="color: #8f5902; font-style: italic">//   stroke(147, 0, 183);</span>
+                        <span style="color: #8f5902; font-style: italic">//}</span>
+                        
+                        <span style="color: #204a87; font-weight: bold">function</span> <span style="color: #000000">draw</span><span style="color: #000000; font-weight: bold">()</span> <span style="color: #000000; font-weight: bold">{</span>       <span style="color: #8f5902; font-style: italic">//draws based on items in function</span>
+                        <span style="color: #000000">fill</span><span style="color: #000000; font-weight: bold">(</span><span style="color: #000000">red</span><span style="color: #000000; font-weight: bold">,</span> <span style="color: #000000">green</span><span style="color: #000000; font-weight: bold">,</span> <span style="color: #000000">blue</span><span style="color: #000000; font-weight: bold">);</span>     <span style="color: #8f5902; font-style: italic">//fill of circle is set according to variables red, green, blue</span>
+                        <span style="color: #000000">background</span><span style="color: #000000; font-weight: bold">(</span><span style="color: #0000cf; font-weight: bold">0</span><span style="color: #000000; font-weight: bold">);</span>              <span style="color: #8f5902; font-style: italic">// resets background everytime it is run.</span>
+                        <span style="color: #8f5902; font-style: italic">// FUN: turn this off to draw!</span>
+                        <span style="color: #000000">ellipse</span><span style="color: #000000; font-weight: bold">(</span><span style="color: #000000">xPos</span><span style="color: #000000; font-weight: bold">,</span> <span style="color: #000000">yPos</span><span style="color: #000000; font-weight: bold">,</span> <span style="color: #0000cf; font-weight: bold">33</span><span style="color: #000000; font-weight: bold">,</span> <span style="color: #0000cf; font-weight: bold">33</span><span style="color: #000000; font-weight: bold">);</span>        <span style="color: #8f5902; font-style: italic">//draw ellipse based on xPos, ypos, width of 33, height of 33.</span>
+                        <span style="color: #000000; font-weight: bold">}</span>
+                        
+                        <span style="color: #204a87; font-weight: bold">function</span> <span style="color: #000000">keyPressed</span><span style="color: #000000; font-weight: bold">()</span> <span style="color: #000000; font-weight: bold">{</span>     <span style="color: #8f5902; font-style: italic">//checks if key is pressed</span>
+                        
+                        <span style="color: #204a87; font-weight: bold">if</span> <span style="color: #000000; font-weight: bold">(</span><span style="color: #000000">keyCode</span> <span style="color: #ce5c00; font-weight: bold">===</span> <span style="color: #0000cf; font-weight: bold">82</span><span style="color: #000000; font-weight: bold">){</span> <span style="color: #8f5902; font-style: italic">// if r is pressed //red</span>
+                        <span style="color: #000000">red</span> <span style="color: #ce5c00; font-weight: bold">=</span> <span style="color: #0000cf; font-weight: bold">255</span><span style="color: #000000; font-weight: bold">;</span>          <span style="color: #8f5902; font-style: italic">//assign red to 255.</span>
+                        <span style="color: #000000">green</span> <span style="color: #ce5c00; font-weight: bold">=</span> <span style="color: #0000cf; font-weight: bold">45</span><span style="color: #000000; font-weight: bold">;</span>         <span style="color: #8f5902; font-style: italic">//assign green to 45</span>
+                        <span style="color: #000000">blue</span> <span style="color: #ce5c00; font-weight: bold">=</span> <span style="color: #0000cf; font-weight: bold">0</span><span style="color: #000000; font-weight: bold">;</span>           <span style="color: #8f5902; font-style: italic">//assign blue to 0</span>
+                        <span style="color: #000000">serial</span><span style="color: #000000; font-weight: bold">.</span><span style="color: #000000">write</span><span style="color: #000000; font-weight: bold">(</span><span style="color: #4e9a06">&#39;r&#39;</span><span style="color: #000000; font-weight: bold">);</span>
+                        <span style="color: #000000; font-weight: bold">}</span> <span style="color: #204a87; font-weight: bold">else</span> <span style="color: #204a87; font-weight: bold">if</span> <span style="color: #000000; font-weight: bold">(</span><span style="color: #000000">keyCode</span> <span style="color: #ce5c00; font-weight: bold">===</span> <span style="color: #0000cf; font-weight: bold">79</span><span style="color: #000000; font-weight: bold">)</span> <span style="color: #000000; font-weight: bold">{</span> <span style="color: #8f5902; font-style: italic">// if o is pressed  //orange</span>
+                        <span style="color: #000000">red</span> <span style="color: #ce5c00; font-weight: bold">=</span> <span style="color: #0000cf; font-weight: bold">255</span><span style="color: #000000; font-weight: bold">;</span>          <span style="color: #8f5902; font-style: italic">//assign red to 255.</span>
+                        <span style="color: #000000">green</span> <span style="color: #ce5c00; font-weight: bold">=</span> <span style="color: #0000cf; font-weight: bold">150</span><span style="color: #000000; font-weight: bold">;</span>         <span style="color: #8f5902; font-style: italic">//assign green to 150</span>
+                        <span style="color: #000000">blue</span> <span style="color: #ce5c00; font-weight: bold">=</span> <span style="color: #0000cf; font-weight: bold">0</span><span style="color: #000000; font-weight: bold">;</span>           <span style="color: #8f5902; font-style: italic">//assign blue to 0</span>
+                        <span style="color: #000000">serial</span><span style="color: #000000; font-weight: bold">.</span><span style="color: #000000">write</span><span style="color: #000000; font-weight: bold">(</span><span style="color: #4e9a06">&#39;o&#39;</span><span style="color: #000000; font-weight: bold">);</span>
+                        <span style="color: #000000; font-weight: bold">}</span> <span style="color: #204a87; font-weight: bold">else</span> <span style="color: #204a87; font-weight: bold">if</span> <span style="color: #000000; font-weight: bold">(</span><span style="color: #000000">keyCode</span> <span style="color: #ce5c00; font-weight: bold">===</span> <span style="color: #0000cf; font-weight: bold">89</span><span style="color: #000000; font-weight: bold">)</span> <span style="color: #000000; font-weight: bold">{</span> <span style="color: #8f5902; font-style: italic">// if y is pressed   //yellow</span>
+                        <span style="color: #000000">red</span> <span style="color: #ce5c00; font-weight: bold">=</span> <span style="color: #0000cf; font-weight: bold">255</span><span style="color: #000000; font-weight: bold">;</span>          <span style="color: #8f5902; font-style: italic">//assign red to 255.</span>
+                        <span style="color: #000000">green</span> <span style="color: #ce5c00; font-weight: bold">=</span> <span style="color: #0000cf; font-weight: bold">238</span><span style="color: #000000; font-weight: bold">;</span>         <span style="color: #8f5902; font-style: italic">//assign green to 238</span>
+                        <span style="color: #000000">blue</span> <span style="color: #ce5c00; font-weight: bold">=</span> <span style="color: #0000cf; font-weight: bold">0</span><span style="color: #000000; font-weight: bold">;</span>           <span style="color: #8f5902; font-style: italic">//assign blue to 0</span>
+                        <span style="color: #000000">serial</span><span style="color: #000000; font-weight: bold">.</span><span style="color: #000000">write</span><span style="color: #000000; font-weight: bold">(</span><span style="color: #4e9a06">&#39;y&#39;</span><span style="color: #000000; font-weight: bold">);</span>
+                        <span style="color: #000000; font-weight: bold">}</span> <span style="color: #204a87; font-weight: bold">else</span> <span style="color: #204a87; font-weight: bold">if</span> <span style="color: #000000; font-weight: bold">(</span><span style="color: #000000">keyCode</span> <span style="color: #ce5c00; font-weight: bold">===</span> <span style="color: #0000cf; font-weight: bold">71</span><span style="color: #000000; font-weight: bold">)</span> <span style="color: #000000; font-weight: bold">{</span> <span style="color: #8f5902; font-style: italic">// if g is pressed   // green</span>
+                        <span style="color: #000000">red</span> <span style="color: #ce5c00; font-weight: bold">=</span> <span style="color: #0000cf; font-weight: bold">122</span><span style="color: #000000; font-weight: bold">;</span>          <span style="color: #8f5902; font-style: italic">//assign red to 122.</span>
+                        <span style="color: #000000">green</span> <span style="color: #ce5c00; font-weight: bold">=</span> <span style="color: #0000cf; font-weight: bold">177</span><span style="color: #000000; font-weight: bold">;</span>         <span style="color: #8f5902; font-style: italic">//assign green to 177</span>
+                        <span style="color: #000000">blue</span> <span style="color: #ce5c00; font-weight: bold">=</span> <span style="color: #0000cf; font-weight: bold">19</span><span style="color: #000000; font-weight: bold">;</span>           <span style="color: #8f5902; font-style: italic">//assign blue to 19</span>
+                        <span style="color: #000000">serial</span><span style="color: #000000; font-weight: bold">.</span><span style="color: #000000">write</span><span style="color: #000000; font-weight: bold">(</span><span style="color: #4e9a06">&#39;g&#39;</span><span style="color: #000000; font-weight: bold">);</span>
+                        <span style="color: #000000; font-weight: bold">}</span> <span style="color: #204a87; font-weight: bold">else</span> <span style="color: #204a87; font-weight: bold">if</span> <span style="color: #000000; font-weight: bold">(</span><span style="color: #000000">keyCode</span> <span style="color: #ce5c00; font-weight: bold">===</span> <span style="color: #0000cf; font-weight: bold">66</span><span style="color: #000000; font-weight: bold">)</span> <span style="color: #000000; font-weight: bold">{</span> <span style="color: #8f5902; font-style: italic">// if b is pressed   //blue</span>
+                        <span style="color: #000000">red</span> <span style="color: #ce5c00; font-weight: bold">=</span> <span style="color: #0000cf; font-weight: bold">29</span><span style="color: #000000; font-weight: bold">;</span>          <span style="color: #8f5902; font-style: italic">//assign red to 29.</span>
+                        <span style="color: #000000">green</span> <span style="color: #ce5c00; font-weight: bold">=</span> <span style="color: #0000cf; font-weight: bold">137</span><span style="color: #000000; font-weight: bold">;</span>         <span style="color: #8f5902; font-style: italic">//assign green to 137</span>
+                        <span style="color: #000000">blue</span> <span style="color: #ce5c00; font-weight: bold">=</span> <span style="color: #0000cf; font-weight: bold">220</span><span style="color: #000000; font-weight: bold">;</span>           <span style="color: #8f5902; font-style: italic">//assign blue to 220</span>
+                        <span style="color: #000000">serial</span><span style="color: #000000; font-weight: bold">.</span><span style="color: #000000">write</span><span style="color: #000000; font-weight: bold">(</span><span style="color: #4e9a06">&#39;b&#39;</span><span style="color: #000000; font-weight: bold">);</span>
+                        <span style="color: #000000; font-weight: bold">}</span> <span style="color: #204a87; font-weight: bold">else</span> <span style="color: #204a87; font-weight: bold">if</span> <span style="color: #000000; font-weight: bold">(</span><span style="color: #000000">keyCode</span> <span style="color: #ce5c00; font-weight: bold">===</span> <span style="color: #0000cf; font-weight: bold">80</span><span style="color: #000000; font-weight: bold">)</span> <span style="color: #000000; font-weight: bold">{</span> <span style="color: #8f5902; font-style: italic">// if p is pressed   //purple</span>
+                        <span style="color: #000000">red</span> <span style="color: #ce5c00; font-weight: bold">=</span> <span style="color: #0000cf; font-weight: bold">117</span><span style="color: #000000; font-weight: bold">;</span>          <span style="color: #8f5902; font-style: italic">//assign red to 117.</span>
+                        <span style="color: #000000">green</span> <span style="color: #ce5c00; font-weight: bold">=</span> <span style="color: #0000cf; font-weight: bold">85</span><span style="color: #000000; font-weight: bold">;</span>         <span style="color: #8f5902; font-style: italic">//assign green to 85</span>
+                        <span style="color: #000000">blue</span> <span style="color: #ce5c00; font-weight: bold">=</span> <span style="color: #0000cf; font-weight: bold">208</span><span style="color: #000000; font-weight: bold">;</span>           <span style="color: #8f5902; font-style: italic">//assign blue to 208</span>
+                        <span style="color: #000000">serial</span><span style="color: #000000; font-weight: bold">.</span><span style="color: #000000">write</span><span style="color: #000000; font-weight: bold">(</span><span style="color: #4e9a06">&#39;p&#39;</span><span style="color: #000000; font-weight: bold">);</span>
+                        <span style="color: #000000; font-weight: bold">}</span>
+                        <span style="color: #000000; font-weight: bold">}</span>
+                    </pre></div>
+                    
+                    <p>
+                    The sketch starts with 8 initialized variables. First, serial is initialized to prepare for a serialport object. Then the portName variable is assigned to the port that the arduino is connected to. xPos and yPos are initialized to record the xPos and yPos of the joystick from serial. Dataarray is initialized as an array that keeps track of data from serial. Variables green, red, and blue are initialized to track the color of the circle sprite and start at value 255.
+                    </p>
+                    <p>
+                    The set up function and the printList, serverConnected, portOpen, serialError, portClose, and serialEvent functions are borrowed from the lecutre content. Set up function sets up serial functions. It first creates a new instance of the serial port. Then it calls printList, which prints a list of serialPorts. Then it calls serverConnected, which connects to the server. Then it calls portOpen, which opens the a serial port. Then serialEvent, which handles data when data arrives over serial. serialEvent assigns data from the serial port to the xPos and yPos variables. Then it calls serialError, which checks for errors in serial. Then it calls portClose, which closes the port. It then lists the serial ports available and opens the one associated with portName. Then it creates a canvas for the proram.
+                    </p>
+                    <p>
+                    The draw function will draw the circle sprite that is on the screen. It first assigns the color of the circle to the color code correspondng to the red, green, and blue variables. Then it draws the background and assigns it to the color corresponding with 0. Then it draws the circle at the xPos and yPos dictated by the data coming in from serial.
+                    FUNNOTE: if you remove the background(0), it will become a drawing tool :)
+                    </p>
+                    <p>
+                    The keypressed function checks if a key was pressed on the keyboard. If a key is pressed, it checks which key it was, and if it is the r,o,y,g,b,or p keys, it will change the value of the red, green, and blue variables accordingly and writes that char to serial for the arduino to pick up.
+                    </p>
+                    
+                    <h2>Circuit Image and Operation GIF </h2>
+                    <p>
+                    <img src="A6Circuit.jpg" width=400></a>
+                    <img src="A6Move.gif" width=400></a>
+                    <img src="A6Color.gif" width=400></a>
+                    <img src="Norm.png" width=400></a>
+                    <img src="Draw.png" width=400></a>
+
+                        </p>
+                            <p>
+                            The first image shows the circuit from above.  The 1st gif shows the behavior of screen when the joystick moves around. The 2nd gif shows the colors of the RGB LED and the circle sprite changing when keys are pressed on the laptop. The 4th picture shows the webpage when the arduino and p5 code is running. The 5th picture shows the webpage when the code is running but background(0) is removed from the p5.js code.
+                            The gifs are sped up a bit as a quirk of the program I use to make gifs.
+                            </p>
+                            <p>
+                            In this circuit there are 9 wires connected to the Arduino. One is connected each to pins A0, A1, 2, 9, 10, 11, and 5V. Two are connected to seperate grounds. I used seperate grounds to make it clearer where each part of the circuit goes. The arduino is connected to my laptop, which is also powering it. There are 3 wires from pins 9, 10, and 11 that connect to the RGB LED, then resistors, then to ground. 
+                            </p>
+                            <p>
+                            The joystick is connected to the wires that are connected to pins A0, A1, 2, 5V, and ground.
+
+                            </p>
+                        </div>
+        
+    </body>
+</html>
